@@ -1,11 +1,11 @@
 /*
  * CMysqlUtil.cpp
  *
- *  Created on: 2014-5-27
- *      Author: casa
+ *  Created on: 2014-9-2
+ *      Author: yukai
  */
 
-#include "c_mysql_util.h"
+#include "CMysqlUtil.h"
 
 #include <string.h>
 

@@ -39,7 +39,7 @@ bool ThreadPool::Thread_Pool_init(int thread_count_in_pool_){
 		}
 		++free_thread_count;
 	}
-	return false;
+	return success;
 }
 
 void ThreadPool::add_task(void (*f)(void *), void *a, bool e){

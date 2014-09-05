@@ -4,6 +4,21 @@
 #include <stdint.h>
 #include <sys/types.h>
 
+typedef signed char		int8_t;
+typedef short int			int16_t;
+typedef int					int32_t;
+# if __WORDSIZE == 64
+typedef long int			int64_t;
+# else
+__extension__
+typedef long long int	int64_t;
+#endif
+
+const int64_t TIMEOUT= 30 * 3600;	// timeout is 30 minutes
+const int64_t EPOLLTIMEOUT = 1000;	// epoll timeout
+
+/////////////////////////////////////////////////////////////
+
 #define int1store(T,A)       do { *((uint8_t *)(T)) = (uint8_t)(A); } while (0)
 #define int2store(T,A)       do { uint def_temp= (uint) (A) ;   \
     *((uint8_t*) (T))=  (uint8_t)(def_temp);                    \

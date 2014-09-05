@@ -1,16 +1,16 @@
 /*
  * CMysqlUtil.h
  *
- *  Created on: 2014-5-27
- *      Author: casa
+ *  Created on: 2014-9-2
+ *      Author: yukai
  */
 
 #ifndef C_MYSQL_UTIL_H_
 #define C_MYSQL_UTIL_H_
 
-#include "c_define.h"
+#include "CDefine.h"
 #include <sys/time.h>
-//#include <time.h>
+#include <time.h>
 
 #include <stdint.h>
 #include <string.h>
@@ -76,6 +76,15 @@ public:
     	timeval time;
     	gettimeofday(&time, NULL);
     	return ((int64_t)time.tv_sec)*1000000 + time.tv_usec;
+    }
+
+    static inline void print_current_time(){
+    	timeval tv;
+    	tm t;
+    	gettimeofday(&tv, NULL);
+    	localtime_r(&(tv.tv_sec), &t);
+    	printf("[%Y-%m-%d %H:%M:%S.%06.6d] ",
+    			t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec, (int)tv.tv_usec);
     }
 
 };

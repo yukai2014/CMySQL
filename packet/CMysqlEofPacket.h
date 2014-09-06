@@ -9,7 +9,7 @@
 #define C_MYSQL_EOF_PACKET_H_
 
 #include <stdint.h>
-#include "c_mysql_util.h"
+#include "../CMysqlUtil.h"
 #include "CMysqlSqlPacket.h"
 
 class CMysqlEOFPacket: public CMysqlSQLPacket {

@@ -55,7 +55,7 @@ int CMysqlHandshakePacket::serialize(char *buffer,int64_t len,int64_t &pos) {
 		Voluntary context switches 2, Involuntary context switches 2
 	 *(header
 	 */
-	cout<<"开始序列化报文体和报文头！"<<endl;
+	Logs::log("开始序列化报文体和报文头！");
 	int64_t pkt_len=48;
 	CMysqlUtil::store_int3(buffer,len,static_cast<uint32_t>(pkt_len),pos);
 //	cout<<"-----------------------------------pos: "<<pos<<endl;
@@ -84,7 +84,7 @@ int CMysqlHandshakePacket::serialize(char *buffer,int64_t len,int64_t &pos) {
 //	cout<<"-----------------------------------pos: "<<pos<<endl;
 	memset(buffer+pos,terminated_,0);pos=pos+1;
 //	cout<<"-----------------------------------pos: "<<pos<<endl;
-	return 0;
+	return C_SUCCESS;
 	//三个字节的 length=48;
 	//一个字节的 seq=0;
 }

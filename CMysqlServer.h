@@ -12,28 +12,41 @@
 #include <pthread.h>
 #include <errno.h>
 #include <string.h>
+#include <sys/epoll.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include <map>
 
 #include "packet/CMysqlSprPacket.h"
 #include "packet/CMysqlCommandPacket.h"
-#include "CMysqlResHeaderPacket.h"
-#include "CMysqlSqlPacket.h"
+#include "packet/CMysqlResHeaderPacket.h"
+#include "packet/CMysqlSqlPacket.h"
+#include "packet/CMysqlFieldPacket.h"
+#include "packet/CMysqlEofPacket.h"
+#include "CMysqlSession.h"
+#include "CMysqlLoginer.h"
 #include "ThreadPool.h"
 #include "Logs.h"
-#include "CSession.h"
 
 using namespace std;
 
 #define OB_LIKELY(x)       __builtin_expect(!!(x),1)
 
+class CMysqlLoginer;
 
-//ObMySQLRowPacket
 class CMysqlServer {
 public:
 	CMysqlServer();
 	virtual ~CMysqlServer();
 
 public:
+	int start();
+	int initialize();
+
+	inline void set_port(){
+	}
 
 	inline void set_port(int port){
 //		port_ = 2345;
@@ -55,23 +68,26 @@ public:
 
 	}
 
-	int listen_port(port);
+	int listen_port(int port);
 
 	bool AcceptConnection(int epoll_fd, int fd);
 	bool ReceiveData(epoll_event event, char *buf);
-	bool ReceiveData(epoll_event event);
+	bool ReceiveData(int fd);
 
 public:
 	ThreadPool *threadpool_;
 	queue<CMysqlSQLPacket*> in_queue_;
 	queue<CMysqlSQLPacket*> out_queue_;
-	map<int, Session*> fd_to_session;
+	map<int, CMysqlSession*> fd_to_session;
+	char *temp_buffer;	//TODO: should be replaced by memory pool
 
 private:
 	int listening_fd;
 	int port_;
 	int work_threads_count_;
 	int connection_max_count_;
+	CMysqlLoginer loginer_;
+
 //	map<int , sockaddr_in> fd_to_adddr;
 };
 

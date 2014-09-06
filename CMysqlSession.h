@@ -5,20 +5,25 @@
  *      Author: imdb
  */
 
-#ifndef CSESSION_H_
-#define CSESSION_H_
+#ifndef C_MYSQL_SESSION_H_
+#define C_MYSQL_SESSION_H_
 
-#include "CDefine.h"
+#include <iostream>
+#include <sys/socket.h>
+#include <netinet/in.h>
+
+#include "CMysqlDefine.h"
 #include "CMysqlUtil.h"
+using namespace std;
 
 enum status{to_shakehand, to_check, to_command, command};
 
-class Session
+class CMysqlSession
 {
 public:
-	Session();
-	Session(int fd);
-	virtual ~Session();
+	CMysqlSession();
+	CMysqlSession(int fd);
+	virtual ~CMysqlSession();
 	bool check_timeout();
 	int64_t get_last_time();
 
@@ -41,4 +46,4 @@ private:
 	status stat_;
 };
 
-#endif /* CSESSION_H_ */
+#endif /* C_MYSQL_SESSION_H_ */

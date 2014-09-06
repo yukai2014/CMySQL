@@ -6,7 +6,7 @@
  */
 
 #include "CMysqlFieldPacket.h"
-#include "c_mysql_util.h"
+#include "../CMysqlUtil.h"
 
 CMysqlFieldPacket::CMysqlFieldPacket():catalog_("def"),
 db_(""),length_(0x20000),flags_(0),decimals_(0),charsetnr_(28){

@@ -10,7 +10,7 @@
 
 #include <stdint.h>
 
-#include "c_mysql_util.h"
+#include "../CMysqlUtil.h"
 
 class CMysqlOKPacket {
 public:

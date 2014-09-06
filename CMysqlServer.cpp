@@ -6,11 +6,10 @@
  */
 
 #include "CMysqlServer.h"
-#include "CMysqlFieldPacket.h"
-#include "CMysqlEofPacket.h"
 
 CMysqlServer::CMysqlServer():port_(2345),work_threads_count_(4),connection_max_count_(300) {
-
+	temp_buffer = (char*)malloc(MAX_PACKET_SIZE * sizeof(char));
+	memset(temp_buffer, 0, sizeof(temp_buffer));
 }
 
 CMysqlServer::~CMysqlServer() {
@@ -45,8 +44,8 @@ int CMysqlServer::start() {
 	epoll_event event_list[connection_max_count_];
 
 	epoll_event event;
-	event.events = EPOLL_IN|EPOLL_ET;
-	event.data.fd = epoll_fd;
+	event.events = EPOLLIN|EPOLLET;
+	event.data.fd = listening_fd;
 
 	if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, listening_fd, &event)){
 		Logs::elog("%s. register epoll failed. ", strerror(errno));
@@ -77,13 +76,13 @@ int CMysqlServer::start() {
 					continue;
 				}
 
-				Logs::log("listen fd is:	%d", listen_fd);
+				Logs::log("listen fd is:	%d", listening_fd);
 				Logs::log("available fd is:	%d", ready_fd);
 				if (ready_fd == listening_fd){
-					AcceptConnection(epoll_fd, listen_fd);
+					AcceptConnection(epoll_fd, listening_fd);
 				}
 				else{
-					if (ReceiveData(event_list[i].data.fd) == true){
+					if (ReceiveData(event_list[i].data.fd) == C_SUCCESS){
 
 //						SendMessageBack(event_list[i].data.fd);
 					}
@@ -103,8 +102,8 @@ int CMysqlServer::initialize() {
 	return 0;
 }
 
-int CMysqlServer::listen_port(port){
-	if ((listening_fd = socket(AF_INT, SOCKET_STREAM, 0)) == -1){
+int CMysqlServer::listen_port(int port){
+	if ((listening_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1){
 		Logs::elog("%s. can't create socket.", strerror(errno));
 		return C_ERROR;
 	}
@@ -143,10 +142,10 @@ bool CMysqlServer::AcceptConnection(int epoll_fd, int fd)
 		return false;
 	}
 	else{
-		Logs::log("server fd is %d",connected_fd);
-		Logs::log("accept socket connection from %s:%d\n", inet_ntoa(connected_socket.sin_addr), ntohs(connected_socket.sin_port));
+		Logs::log("connected fd is %d",connected_fd);
+		Logs::log("accept socket connection from %s:%d", inet_ntoa(connected_socket.sin_addr), ntohs(connected_socket.sin_port));
 //		fd_to_adddr.insert(pair<int, sockaddr_in>(connected_fd, connected_socket));
-		fd_to_session.insert(pair<int, Session*>(fd, new Session(fd)));
+		fd_to_session.insert(pair<int, CMysqlSession*>(fd, new CMysqlSession(fd)));
 	}
 
 	// register new socket to epoll
@@ -156,22 +155,31 @@ bool CMysqlServer::AcceptConnection(int epoll_fd, int fd)
 	event.data.fd = connected_fd;
 	epoll_ctl(epoll_fd, EPOLL_CTL_ADD, connected_fd, &event);
 
+//	Logs::log("still in AcceptConnection");
+//	ReceiveData(connected_fd);
+
+	int ret = loginer_.login(connected_fd);
+
 	return true;
 }
 
-bool CMysqlServer::ReceiveData(inf fd)
+
+
+bool CMysqlServer::ReceiveData(int fd)
 {
 	Logs::log("in ReceiveData function");
-	Session *s;
-	if (fd_to_session.find(fd) == fd_to_session.end()){
+	CMysqlSession *s;
+	if (fd_to_session.find(fd) != fd_to_session.end()){
 		Logs::elog("fd is not in map");
 	}
 	else{
-		s = fd_to_session.find(fd);
+		s = fd_to_session.find(fd)->second;
 	}
 
+	int messege_length = 10000;
+	char buf[messege_length];
 	memset(buf, 0, sizeof(buf));
-	int recv_count = recv(fd, buf, MESSAGE_LENGTH_MAX, 0);
+	int recv_count = recv(fd, buf, messege_length, 0);
 	if (recv_count < 0){
 		Logs::elog(" read data failed.");
 		return false;

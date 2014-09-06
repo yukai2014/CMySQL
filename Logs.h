@@ -32,8 +32,8 @@ public:
 
 	static void log(const char *format, ...){
 	#ifdef DEBUG
-		print_current_time();
-		printf("INFO ");
+		CMysqlUtil::print_current_time();
+		printf("INFO  ");
 
 		va_list arg;
 		va_start(arg, format);
@@ -45,8 +45,8 @@ public:
 
 	static void elog(const char *format, ...){
 #ifdef DEBUG
-		print_current_time();
-		print("ERROR ");
+		CMysqlUtil::print_current_time();
+		printf("ERROR ");
 
 		va_list arg;
 		va_start(arg, format);

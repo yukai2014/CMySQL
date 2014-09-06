@@ -11,8 +11,8 @@
 #include <string.h>
 #include <stdint.h>
 
-#include "c_define.h"
-#include "c_mysql_util.h"
+#include "../CMysqlDefine.h"
+#include "../CMysqlUtil.h"
 
 // sizeof(CMysqlCommandPacket) = 24
 // because virtual function hold 8 Bytes, regardless virtual function count

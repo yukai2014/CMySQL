@@ -8,8 +8,8 @@
 #ifndef C_MYSQL_SQL_PACKET_H_
 #define C_MYSQL_SQL_PACKET_H_
 
-#include "c_define.h"
-#include "c_mysql_util.h"
+#include "../CMysqlDefine.h"
+#include "../CMysqlUtil.h"
 
 #include <stdint.h>
 #include <iostream>

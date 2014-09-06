@@ -26,23 +26,23 @@
 					<folderInfo id="cdt.managedbuild.config.gnu.so.debug.1305664275." name="/" resourcePath="">
 						<toolChain id="cdt.managedbuild.toolchain.gnu.so.debug.71306" name="Linux GCC" superClass="cdt.managedbuild.toolchain.gnu.so.debug">
 							<targetPlatform id="cdt.managedbuild.target.gnu.platform.so.debug.1658005933" name="调试平台" superClass="cdt.managedbuild.target.gnu.platform.so.debug"/>
-							<builder buildPath="${workspace_loc:/CMySQL/Debug}" id="cdt.managedbuild.target.gnu.builder.so.debug.890980778" managedBuildOn="true" name="GNU Make 构建器.Debug" superClass="cdt.managedbuild.target.gnu.builder.so.debug"/>
+							<builder buildPath="${workspace_loc:/CMySQL/Debug}" id="cdt.managedbuild.target.gnu.builder.so.debug.890980778" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="GNU Make 构建器" superClass="cdt.managedbuild.target.gnu.builder.so.debug"/>
 							<tool id="cdt.managedbuild.tool.gnu.archiver.base.1242266138" name="GCC 归档器" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.so.debug.781735835" name="GNU C++ 编译器" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.so.debug">
-								<option id="gnu.cpp.compiler.so.debug.option.optimization.level.1974769748" superClass="gnu.cpp.compiler.so.debug.option.optimization.level" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
-								<option id="gnu.cpp.compiler.so.debug.option.debugging.level.953636026" superClass="gnu.cpp.compiler.so.debug.option.debugging.level" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
+								<option id="gnu.cpp.compiler.so.debug.option.optimization.level.1974769748" name="优化级别" superClass="gnu.cpp.compiler.so.debug.option.optimization.level" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
+								<option id="gnu.cpp.compiler.so.debug.option.debugging.level.953636026" name="调试级别" superClass="gnu.cpp.compiler.so.debug.option.debugging.level" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.777025531" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.compiler.so.debug.1001076031" name="GNU C 编译器" superClass="cdt.managedbuild.tool.gnu.c.compiler.so.debug">
-								<option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.so.debug.option.optimization.level.41456528" superClass="gnu.c.compiler.so.debug.option.optimization.level" valueType="enumerated"/>
-								<option id="gnu.c.compiler.so.debug.option.debugging.level.366884582" superClass="gnu.c.compiler.so.debug.option.debugging.level" value="gnu.c.debugging.level.max" valueType="enumerated"/>
+								<option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.so.debug.option.optimization.level.41456528" name="优化级别" superClass="gnu.c.compiler.so.debug.option.optimization.level" valueType="enumerated"/>
+								<option id="gnu.c.compiler.so.debug.option.debugging.level.366884582" name="调试级别" superClass="gnu.c.compiler.so.debug.option.debugging.level" value="gnu.c.debugging.level.max" valueType="enumerated"/>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1483665086" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.linker.so.debug.776543324" name="GNU C 链接器" superClass="cdt.managedbuild.tool.gnu.c.linker.so.debug">
-								<option defaultValue="true" id="gnu.c.link.so.debug.option.shared.1643827715" superClass="gnu.c.link.so.debug.option.shared" valueType="boolean"/>
+								<option defaultValue="true" id="gnu.c.link.so.debug.option.shared.1643827715" name="共享的（-shared）" superClass="gnu.c.link.so.debug.option.shared" valueType="boolean"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.so.debug.1824353764" name="GNU C++ 链接器" superClass="cdt.managedbuild.tool.gnu.cpp.linker.so.debug">
-								<option defaultValue="true" id="gnu.cpp.link.so.debug.option.shared.1166893658" superClass="gnu.cpp.link.so.debug.option.shared" valueType="boolean"/>
+								<option defaultValue="true" id="gnu.cpp.link.so.debug.option.shared.1166893658" name="共享的（-shared）" superClass="gnu.cpp.link.so.debug.option.shared" valueType="boolean"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.546311099" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
@@ -51,6 +51,16 @@
 							<tool id="cdt.managedbuild.tool.gnu.assembler.so.debug.1866922268" name="GCC 汇编器" superClass="cdt.managedbuild.tool.gnu.assembler.so.debug">
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1590391580" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
+						</toolChain>
+					</folderInfo>
+					<folderInfo id="cdt.managedbuild.config.gnu.so.debug.1305664275.1932067983" name="/" resourcePath="packet">
+						<toolChain id="cdt.managedbuild.toolchain.gnu.so.debug.360998377" name="Linux GCC" superClass="cdt.managedbuild.toolchain.gnu.so.debug" unusedChildren="">
+							<tool id="cdt.managedbuild.tool.gnu.archiver.base.1335382675" name="GCC 归档器" superClass="cdt.managedbuild.tool.gnu.archiver.base.1242266138"/>
+							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.so.debug.1320152588" name="GNU C++ 编译器" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.so.debug.781735835"/>
+							<tool id="cdt.managedbuild.tool.gnu.c.compiler.so.debug.1479126212" name="GNU C 编译器" superClass="cdt.managedbuild.tool.gnu.c.compiler.so.debug.1001076031"/>
+							<tool id="cdt.managedbuild.tool.gnu.c.linker.so.debug.409535659" name="GNU C 链接器" superClass="cdt.managedbuild.tool.gnu.c.linker.so.debug.776543324"/>
+							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.so.debug.169318763" name="GNU C++ 链接器" superClass="cdt.managedbuild.tool.gnu.cpp.linker.so.debug.1824353764"/>
+							<tool id="cdt.managedbuild.tool.gnu.assembler.so.debug.1109037384" name="GCC 汇编器" superClass="cdt.managedbuild.tool.gnu.assembler.so.debug.1866922268"/>
 						</toolChain>
 					</folderInfo>
 				</configuration>
@@ -939,6 +949,7 @@
 					</profile>
 				</scannerConfigBuildInfo>
 			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
 		</cconfiguration>
 	</storageModule>
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">

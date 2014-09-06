@@ -15,8 +15,9 @@ using namespace std;
 #include <string.h>
 #include <stdint.h>
 
-#include "c_define.h"
-#include "c_mysql_util.h"
+#include "../CMysqlDefine.h"
+#include "../CMysqlUtil.h"
+#include "../Logs.h"
 
 class CMysqlHandshakePacket {
 public:

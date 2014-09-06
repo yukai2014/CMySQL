@@ -1,21 +1,30 @@
-#ifndef C_DEFINE_H_
-#define C_DEFINE_H_
+#ifndef C_MYSQL_DEFINE_H_
+#define C_MYSQL_DEFINE_H_
 
 #include <stdint.h>
 #include <sys/types.h>
 
-typedef signed char		int8_t;
-typedef short int			int16_t;
-typedef int					int32_t;
-# if __WORDSIZE == 64
-typedef long int			int64_t;
-# else
-__extension__
-typedef long long int	int64_t;
-#endif
+//typedef signed char		int8_t;
+//typedef short int			int16_t;
+//typedef int					int32_t;
+//# if __WORDSIZE == 64
+//typedef long int			int64_t;
+//# else
+//__extension__
+//typedef long long int	int64_t;
+//#endif
 
-const int64_t TIMEOUT= 30 * 3600;	// timeout is 30 minutes
+const int64_t TIMEOUT= 30 * 3600L;	// timeout is 30 minutes
 const int64_t EPOLLTIMEOUT = 1000;	// epoll timeout
+const int64_t MAX_PACKET_SIZE = 2 * 1024 * 1024L;	//packet size
+
+#define C_SUCCESS 0
+
+#define C_ERROR 1
+
+#define C_SIZE_OVERFLOW -1
+
+const int C_MYSQL_PACKET_HEADER_SIZE = 4;
 
 /////////////////////////////////////////////////////////////
 
@@ -47,12 +56,6 @@ const int64_t EPOLLTIMEOUT = 1000;	// epoll timeout
 #define uint1korr(A)    (*((uint8_t *)A))
 
 
-#define C_SUCCESS 0
 
-#define C_ERROR 1
-
-#define C_SIZE_OVERFLOW -1
-
-const int C_MYSQL_PACKET_HEADER_SIZE = 4;
 
 #endif

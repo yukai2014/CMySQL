@@ -8,12 +8,13 @@
 #ifndef C_MYSQL_UTIL_H_
 #define C_MYSQL_UTIL_H_
 
-#include "CDefine.h"
+#include "CMysqlDefine.h"
 #include <sys/time.h>
 #include <time.h>
 
 #include <stdint.h>
 #include <string.h>
+#include <stdio.h>
 
 class CMysqlUtil {
 public:
@@ -83,8 +84,8 @@ public:
     	tm t;
     	gettimeofday(&tv, NULL);
     	localtime_r(&(tv.tv_sec), &t);
-    	printf("[%Y-%m-%d %H:%M:%S.%06.6d] ",
-    			t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec, (int)tv.tv_usec);
+    	printf("[%d-%d-%d %d:%d:%d.%6.6d] ",
+    			t.tm_year+1900, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec, (int)tv.tv_usec);
     }
 
 };

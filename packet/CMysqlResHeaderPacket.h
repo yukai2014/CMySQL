@@ -8,7 +8,7 @@
 #ifndef C_MYSQL_RES_HEADER_PACKET_H_
 #define C_MYSQL_RES_HEADER_PACKET_H_
 
-#include "c_mysql_util.h"
+#include "../CMysqlUtil.h"
 #include "CMysqlSqlPacket.h"
 #include <stdint.h>
 

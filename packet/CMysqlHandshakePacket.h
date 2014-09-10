@@ -42,7 +42,7 @@ private:
 
     string str_buf_;   //store ObString content
 
-
+    char *buffer_;
 
 };
 

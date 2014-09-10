@@ -8,8 +8,10 @@
 #ifndef C_MYSQL_ROW_PACKET_H_
 #define C_MYSQL_ROW_PACKET_H_
 
-#include "CMysqlSqlPacket.h"
+#include "CMysqlSQLPacket.h"
 #include <stdint.h>
+#include <string>
+
 
 class CMysqlRowPacket: public CMysqlSQLPacket {
 public:
@@ -22,7 +24,7 @@ public:
     };
 
 private:
-    const string row_;
+    const std::string row_;
 };
 
 #endif /* CMYSQLROWPACKET_H_ */

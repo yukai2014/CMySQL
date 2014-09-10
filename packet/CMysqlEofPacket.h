@@ -10,7 +10,7 @@
 
 #include <stdint.h>
 #include "../CMysqlUtil.h"
-#include "CMysqlSqlPacket.h"
+#include "CMysqlSQLPacket.h"
 
 class CMysqlEOFPacket: public CMysqlSQLPacket {
 public:

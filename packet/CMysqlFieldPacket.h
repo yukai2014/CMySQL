@@ -8,8 +8,12 @@
 #ifndef C_MYSQL_FIELD_PACKET_H_
 #define C_MYSQL_FIELD_PACKET_H_
 
-#include "CMysqlSqlPacket.h"
+#include <iostream>
 #include <stdint.h>
+#include <string>
+
+#include "CMysqlSQLPacket.h"
+using namespace std;
 
 class CMysqlFieldPacket: public CMysqlSQLPacket {
 public:

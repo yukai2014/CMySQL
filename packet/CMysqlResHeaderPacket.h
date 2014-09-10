@@ -9,7 +9,7 @@
 #define C_MYSQL_RES_HEADER_PACKET_H_
 
 #include "../CMysqlUtil.h"
-#include "CMysqlSqlPacket.h"
+#include "CMysqlSQLPacket.h"
 #include <stdint.h>
 
 class CMysqlResHeaderPacket: public CMysqlSQLPacket{

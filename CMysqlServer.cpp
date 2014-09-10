@@ -18,27 +18,27 @@ CMysqlServer::~CMysqlServer() {
 
 int CMysqlServer::start() {
 	Logs::log("启动cliams mysql server...");
-	int ret;
-	int rc;
+	int ret = C_SUCCESS;
+	int result;
 
 	initialize();
 
 	threadpool_ = new ThreadPool();
 	if (threadpool_->Thread_Pool_init(work_threads_count_) == false){
 		Logs::elog("thread pool init failed.");
-		return 0;
+		return C_ERROR;
 	}
 
 
 	if(listen_port(port_) == C_ERROR){
-		return 0;
+		return C_ERROR;
 	}
 
 	int epoll_fd;
 	if ((epoll_fd = epoll_create(connection_max_count_)) == -1){
 		Logs::elog("%s. create epoll failed.", strerror(errno));
 		close(listening_fd);
-		return 0;
+		return C_ERROR;
 	}
 
 	epoll_event event_list[connection_max_count_];
@@ -51,18 +51,19 @@ int CMysqlServer::start() {
 		Logs::elog("%s. register epoll failed. ", strerror(errno));
 		close(listening_fd);
 		close(epoll_fd);
-		return 0;
+		return C_ERROR;
 	}
 	while (1){
-		if ((ret = epoll_wait(epoll_fd, event_list, connection_max_count_, EPOLLTIMEOUT)) == -1){
+		if ((result = epoll_wait(epoll_fd, event_list, connection_max_count_, EPOLLTIMEOUT)) == -1){
 			Logs::elog("%s. wait epoll failed. ", strerror(errno));
+			ret = C_ERROR;
 			break;
 		}
-		else if (ret == 0){
+		else if (result == 0){
 			Logs::log("time out, keep waiting...");
 		}
 		else{
-			for (int i = 0; i < ret; ++i){
+			for (int i = 0; i < result; ++i){
 				// exit abnormally
 				int ready_fd = event_list[i].data.fd;
 				if ((event_list[i].events & EPOLLERR) || (event_list[i].events & EPOLLHUP) || !(event_list[i].events & EPOLLIN))
@@ -79,7 +80,9 @@ int CMysqlServer::start() {
 				Logs::log("listen fd is:	%d", listening_fd);
 				Logs::log("available fd is:	%d", ready_fd);
 				if (ready_fd == listening_fd){
-					AcceptConnection(epoll_fd, listening_fd);
+					int connected_fd;
+					AcceptConnection(epoll_fd, listening_fd, connected_fd);
+					ret = loginer_.login(*(fd_to_session.at(connected_fd)));
 				}
 				else{
 					if (ReceiveData(event_list[i].data.fd) == C_SUCCESS){
@@ -90,7 +93,7 @@ int CMysqlServer::start() {
 			}
 		}
 	}
-
+	return ret;
 }
 
 int CMysqlServer::initialize() {
@@ -129,23 +132,25 @@ int CMysqlServer::listen_port(int port){
 	return C_SUCCESS;
 }
 
-bool CMysqlServer::AcceptConnection(int epoll_fd, int fd)
+bool CMysqlServer::AcceptConnection(int epoll_fd, int fd, int &connected_fd)
 {
+	int ret = C_SUCCESS;
 	Logs::log("in AcceptConnection function");
-	sockaddr_in connected_socket;
-	bzero(&connected_socket, sizeof(connected_socket));
+	sockaddr_in connected_socket_addr;
+	bzero(&connected_socket_addr, sizeof(connected_socket_addr));
 
-	socklen_t length = sizeof(connected_socket);
-	int connected_fd = accept(fd, (sockaddr*)&connected_socket, &length);
+	socklen_t length = sizeof(connected_socket_addr);
+	connected_fd = accept(fd, (sockaddr*)&connected_socket_addr, &length);
 	if (connected_fd < 0){
 		Logs::elog("%s. accept socket failed.", strerror(errno));
 		return false;
 	}
 	else{
 		Logs::log("connected fd is %d",connected_fd);
-		Logs::log("accept socket connection from %s:%d", inet_ntoa(connected_socket.sin_addr), ntohs(connected_socket.sin_port));
+		Logs::log("accept socket connection from %s:%d", inet_ntoa(connected_socket_addr.sin_addr), ntohs(connected_socket_addr.sin_port));
 //		fd_to_adddr.insert(pair<int, sockaddr_in>(connected_fd, connected_socket));
-		fd_to_session.insert(pair<int, CMysqlSession*>(fd, new CMysqlSession(fd)));
+
+		fd_to_session.insert(pair<int, CMysqlSession*>(connected_fd, new CMysqlSession(connected_fd, connected_socket_addr)));
 	}
 
 	// register new socket to epoll
@@ -158,9 +163,9 @@ bool CMysqlServer::AcceptConnection(int epoll_fd, int fd)
 //	Logs::log("still in AcceptConnection");
 //	ReceiveData(connected_fd);
 
-	int ret = loginer_.login(connected_fd);
 
-	return true;
+
+	return ret;
 }
 
 
@@ -176,10 +181,10 @@ bool CMysqlServer::ReceiveData(int fd)
 		s = fd_to_session.find(fd)->second;
 	}
 
-	int messege_length = 10000;
-	char buf[messege_length];
+	int message_length = 10000;
+	char buf[message_length];
 	memset(buf, 0, sizeof(buf));
-	int recv_count = recv(fd, buf, messege_length, 0);
+	int recv_count = recv(fd, buf, message_length, 0);
 	if (recv_count < 0){
 		Logs::elog(" read data failed.");
 		return false;

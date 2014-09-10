@@ -1,77 +1,133 @@
-/*
- * CMysqlOKPacket.cpp
- *
- *  Created on: 2014-9-2
- *      Author: yukai
- */
 
 #include "CMysqlOKPacket.h"
 
-#include <iostream>
-#include <bitset>
-using namespace std;
 
 CMysqlOKPacket::CMysqlOKPacket()
-		:field_count_(0x00),
-		affected_rows_(0),
-		insert_id_(0),
-		server_status_(0x22),
-		warning_count_(0){
-
+:field_count_(0x00),
+ affected_rows_(0),
+ insert_id_(0),
+ server_status_(0x22),
+ warning_count_(0)
+{
 }
 
-CMysqlOKPacket::~CMysqlOKPacket() {
-
+CMysqlOKPacket::~CMysqlOKPacket()
+{
+//	str_buf_.clear();
 }
 
-int CMysqlOKPacket::encode(char* buffer, int64_t length, int64_t& pos){
+int CMysqlOKPacket::set_message(string& message)
+{
 	int ret = C_SUCCESS;
-
-	int64_t start_pos = pos;	//0
-	pos += 4;	// 4
-	ret = serialize(buffer,length,pos);
-	uint32_t pkt_len = static_cast<uint32_t>(pos-start_pos-4);	//16-0-4 = 12
-	ret = CMysqlUtil::store_int3(buffer,length,pkt_len,start_pos);
-	ret = CMysqlUtil::store_int1(buffer,length,2,start_pos);
+	if (message.empty() || 0 > message.length())
+	{
+		Logs::elog("invalid argument message.ptr=%p, message.length=%d",
+				&message, message.length());
+		ret = C_ERROR;
+	}
+	else
+	{
+//		ret = str_buf_.write_string(message, &message_);
+		message_.assign(message);
+		if (C_SUCCESS != ret)
+		{
+			Logs::elog("write string to messaget failed");
+		}
+	}
 	return ret;
 }
 
-int CMysqlOKPacket::serialize(char* buffer, int64_t length, int64_t& pos){
+int CMysqlOKPacket::encode(char* buffer, int64_t length, int64_t& pos)
+{
 	int ret = C_SUCCESS;
-	/*
-	 * ==================报文体============
-	 * OK报文，值恒为0x00
-	 * 受影响的行数0
-	 * 索引ID值0
-	 * 服务器状态2
-	 * 警告计数0
-	 * 服务器消息（可选）
-	 * */
-//	cout<<field_count_<<endl;
-	ret = CMysqlUtil::store_int1(buffer,length,field_count_,pos);	//pos =5
-//	cout<<affected_rows_<<endl;
-	ret = CMysqlUtil::store_length(buffer,length,affected_rows_,pos);	// 6
-//	cout<<insert_id_<<endl;
-	ret = CMysqlUtil::store_length(buffer,length,insert_id_,pos);	// 7
-//	cout<<server_status_<<endl;
-	ret = CMysqlUtil::store_int2(buffer,length,server_status_,pos);	// 9
-//	cout<<warning_count_<<endl;
-	ret = CMysqlUtil::store_int2(buffer,length,warning_count_,pos);	// 11
-
-	{	// for test	-Yu
-		cout<<"ret: ";
-		for (int i = 0; i < 16; ++i){
-			bitset<8> a((int)buffer[i]);
-			cout<<a<<"-";
-		}
-		cout<<endl;
-		string str(buffer);
-		cout<<"传输前的报文内容： "<<str.length()<<endl;
+	int64_t start_pos = pos;
+	if (NULL == buffer || 0 >= length || pos < 0)
+	{
+		Logs::elog("invalid argument buffer=%p, length=%ld, pos=%ld",
+				buffer, length, pos);
+		ret = C_INVALID_ARGUMENT;
 	}
+	else
+	{
+		pos += C_MYSQL_PACKET_HEADER_SIZE;
+		ret = serialize(buffer, length, pos);
+		if (C_SUCCESS == ret)
+		{
+			uint32_t pkt_len = static_cast<uint32_t>(pos - start_pos - C_MYSQL_PACKET_HEADER_SIZE);
+			if (C_SUCCESS != (ret = CMysqlUtil::store_int3(buffer, length, pkt_len, start_pos)))
+			{
+				Logs::elog("serialize packet haader size failed, buffer=%p, buffer length=%ld, packet length=%d, pos=%ld",
+						buffer, length, pkt_len, start_pos);
+			}
+			else if (C_SUCCESS != (ret = CMysqlUtil::store_int1(buffer, length, 2, start_pos)))
+			{
+				Logs::elog("serialize packet haader seq failed, buffer=%p, buffer length=%ld, seq number=%d, pos=%ld",
+						buffer, length, 2, start_pos);
+			}
+		}
+		else
+		{
+			Logs::elog("encode ok packet data failed");
+		}
+	}
+	return ret;
+}
 
-	const char *hello="hello";
-	memcpy(buffer+pos,hello,5);
-	pos=pos+5;		// 16
-//	ret = CMysqlUtil::store_obstr(buffer,length,message_,pos);
+uint64_t CMysqlOKPacket::get_serialize_size()
+{
+	uint64_t len = 0;
+	len += 5; /*1byte field_count + 2bytes server_status + 2bytes warning_count see MySQL protocol*/
+	len += 9; /*max length for unit64_t*/
+	len += 9; /*max length for store_length*/
+	len += 9 + message_.length();
+	return len;
+}
+
+int CMysqlOKPacket::serialize(char* buffer, int64_t length, int64_t& pos)
+{
+	int ret = C_SUCCESS;
+
+	if (NULL == buffer || 0 >= length || pos < 0)
+	{
+		Logs::elog("invalid argument buffer=%p, length=%ld, pos=%ld",
+				buffer, length, pos);
+		ret = C_INVALID_ARGUMENT;
+	}
+	else
+	{
+		if (C_SUCCESS != (ret = CMysqlUtil::store_int1(buffer, length, field_count_, pos)))
+		{
+			Logs::elog("serialize field_count failed, buffer=%p, length=%ld, field_count=%u,"
+					"pos=%ld", buffer, length, field_count_, pos);
+		}
+		else if (C_SUCCESS != (ret = CMysqlUtil::store_length(buffer, length, affected_rows_, pos)))
+		{
+			Logs::elog("serialize affected_row failed, buffer=%p, length=%ld, affected_rows=%lu,"
+					"pos=%ld", buffer, length, affected_rows_, pos);
+		}
+		else if (C_SUCCESS != (ret = CMysqlUtil::store_length(buffer, length, insert_id_, pos)))
+		{
+			Logs::elog("serialize insert_id failed, buffer=%p, length=%ld, insert_id=%lu,"
+					"pos=%ld", buffer, length, insert_id_, pos);
+		}
+		else if (C_SUCCESS != (ret = CMysqlUtil::store_int2(buffer, length, server_status_, pos)))
+		{
+			Logs::elog("serialize server_status failed, buffer=%p, length=%ld, server_status=%u,"
+					"pos=%ld", buffer, length, server_status_, pos);
+		}
+		else if (C_SUCCESS != (ret = CMysqlUtil::store_int2(buffer, length, warning_count_, pos)))
+		{
+			Logs::elog("serialize warning_count failed, buffer=%p, length=%ld, warning_count=%u,"
+					"pos=%ld", buffer, length, warning_count_, pos);
+		}
+		else if (0 != message_.length())
+		{
+			if (C_SUCCESS != (ret = CMysqlUtil::store_obstr(buffer, length, message_, pos)))
+			{
+				Logs::elog("serialize message failed, buffer=%p, length=%ld, insert_id=%lu,"
+						"pos=%ld", buffer, length, insert_id_, pos);
+			}
+		}
+	}
 	return ret;
 }

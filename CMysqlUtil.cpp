@@ -7,11 +7,6 @@
 
 #include "CMysqlUtil.h"
 
-#include <string.h>
-
-#include <iostream>
-using namespace std;
-
 #define UINT64_MAX 123413334
 
 CMysqlUtil::CMysqlUtil() {
@@ -154,9 +149,9 @@ int CMysqlUtil::store_length(char *buf, int64_t len, uint64_t length, int64_t &p
 			}
 		}
 		else if (length == UINT64_MAX) /* NULL_ == UINT64_MAX */
-				{
+		{
 			ret = store_null(buf, len, pos);
-				}
+		}
 		else
 		{
 			ret = C_SIZE_OVERFLOW;
@@ -206,6 +201,24 @@ int CMysqlUtil::store_str_v(char *buf, int64_t len, const char *str,
 		ret = -19;
 	}
 
+	return ret;
+}
+
+int CMysqlUtil::store_obstr_nzt(char *buf, int64_t len, string str, int64_t &pos)
+{
+	int ret = C_SUCCESS;
+	if (len > 0 && pos > 0 && len > pos && len - pos >= str.length())
+	{
+		memcpy(buf + pos, str.c_str(), str.length());
+		pos += str.length();
+	}
+	else
+	{
+		ret = C_SIZE_OVERFLOW;
+		//TBSYS_LOG(WARN, "Store string fail, buffer over flow!"
+		//          " len: [%ld], pos: [%ld], length: [%d], ret: [%d]",
+		//          len, pos, str.length(), ret);
+	}
 	return ret;
 }
 

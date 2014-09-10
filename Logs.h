@@ -21,17 +21,17 @@ class Logs
 {
 public:
 
-//    static inline void print_current_time(){
-//    	timeval tv;
-//    	tm t;
-//    	gettimeofday(&tv, NULL);
-//    	localtime_r(&(tv.tv_sec), &t);
-//    	printf("[%Y-%m-%d %H:%M:%S.%06.6d] ",
-//    			t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec, (int)tv.tv_usec);
-//    }
+	//    static inline void print_current_time(){
+	//    	timeval tv;
+	//    	tm t;
+	//    	gettimeofday(&tv, NULL);
+	//    	localtime_r(&(tv.tv_sec), &t);
+	//    	printf("[%Y-%m-%d %H:%M:%S.%06.6d] ",
+	//    			t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec, (int)tv.tv_usec);
+	//    }
 
 	static void log(const char *format, ...){
-	#ifdef DEBUG
+#ifdef DEBUG
 		CMysqlUtil::print_current_time();
 		printf("INFO  ");
 
@@ -40,11 +40,10 @@ public:
 		vprintf(format, arg);
 		printf("\n");
 		va_end(arg);
-	#endif
+#endif
 	}
 
 	static void elog(const char *format, ...){
-#ifdef DEBUG
 		CMysqlUtil::print_current_time();
 		printf("ERROR ");
 
@@ -53,7 +52,6 @@ public:
 		vprintf(format, arg);
 		printf("\n");
 		va_end(arg);
-#endif
 	}
 };
 

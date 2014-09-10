@@ -22,7 +22,7 @@
 #include "packet/CMysqlSprPacket.h"
 #include "packet/CMysqlCommandPacket.h"
 #include "packet/CMysqlResHeaderPacket.h"
-#include "packet/CMysqlSqlPacket.h"
+#include "packet/CMysqlSQLPacket.h"
 #include "packet/CMysqlFieldPacket.h"
 #include "packet/CMysqlEofPacket.h"
 #include "CMysqlSession.h"
@@ -31,8 +31,6 @@
 #include "Logs.h"
 
 using namespace std;
-
-#define OB_LIKELY(x)       __builtin_expect(!!(x),1)
 
 class CMysqlLoginer;
 
@@ -70,9 +68,14 @@ public:
 
 	int listen_port(int port);
 
-	bool AcceptConnection(int epoll_fd, int fd);
+	bool AcceptConnection(int epoll_fd, int fd, int &connected_fd);
 	bool ReceiveData(epoll_event event, char *buf);
 	bool ReceiveData(int fd);
+	int has_full_session(){
+		int ret = C_SUCCESS;
+		//TODO
+		return ret;
+	}
 
 public:
 	ThreadPool *threadpool_;

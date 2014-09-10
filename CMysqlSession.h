@@ -23,16 +23,21 @@ class CMysqlSession
 public:
 	CMysqlSession();
 	CMysqlSession(int fd);
+	CMysqlSession(int fd, sockaddr_in addr);
 	virtual ~CMysqlSession();
 	bool check_timeout();
 	int64_t get_last_time();
 
-	inline sockaddr_in get_addr(){
+	const sockaddr_in& get_addr() const {
 		return addr_;
 	}
 
 	void set_addr(sockaddr_in addr){
 		addr_ = addr;
+	}
+
+	int get_fd() const {
+		return fd_;
 	}
 
 private:

@@ -18,6 +18,11 @@ CMysqlSession::~CMysqlSession(){
 
 }
 
+
+CMysqlSession::CMysqlSession(int fd, sockaddr_in addr):fd_(fd), addr_(addr) {
+
+}
+
 bool CMysqlSession::check_timeout(){
 	return (CMysqlUtil::get_current_time()-get_last_time()) > TIMEOUT;
 }

@@ -8,30 +8,227 @@
 #include "CMysqlServer.h"
 
 CMysqlLoginer::CMysqlLoginer(){
-
+	buffer_ = (char*)malloc(MAX_PACKET_SIZE * sizeof(char));
 }
 
 CMysqlLoginer::~CMysqlLoginer(){
-
+	free(buffer_);
+	buffer_ = NULL;
 }
 
-int CMysqlLoginer::login(int fd){
+int CMysqlLoginer::login(const CMysqlSession& session) {
 	Logs::log("start to shake hand");
-	int ret;
-	ret = shake_hand(fd);
+	int ret = C_SUCCESS;
+	ret = shake_hand(session);
+	if (ret != C_SUCCESS) {
+		Logs::elog("send shake hand packet failed.");
+	}
 
-	return C_SUCCESS;
+	ret = receive_authority(session);
+	if (ret != C_SUCCESS) {
+		Logs::elog("receive authority packet failed.");
+	}
+
+	ret = send_authority_res(session);
+	if (ret != C_SUCCESS) {
+		Logs::elog("send authority result failed.");
+	}
+	return ret;
 }
 
-int CMysqlLoginer::shake_hand(int fd){
+int CMysqlLoginer::shake_hand(const CMysqlSession& session) {
 	int ret;
 	CMysqlHandshakePacket shakehand_packet;
 	shakehand_packet.set_thread_id(pthread_self());
 
-
 	int64_t len = MAX_PACKET_SIZE;
 	int64_t pos = 0;
-	ret = shakehand_packet.serialize(server_->temp_buffer, len, pos);
+	char *buffer = get_buffer();
+	ret = shakehand_packet.serialize(buffer, len, pos);
+	if (ret != C_SUCCESS) {
+		Logs::elog("shake hand packet serialize fails. buffer_ is %p, len is %d, pos is %d", buffer, len, pos);
+	}
+	ret = write_data(session.get_fd(), buffer, len);
+	if (ret == C_ERROR) {
+		Logs::elog("write shake hand data to client fails. "
+				"fd is %d, buffer is %p, len is %ld, errno is %d",
+				session.get_fd(), buffer, len, ret);
+	}
+	else {
+		Logs::log("send shake hand packet to %s", inet_ntoa(session.get_addr().sin_addr));
+	}
 
-	return C_SUCCESS;
+	return ret;
+}
+
+int CMysqlLoginer::receive_authority(const CMysqlSession& session) {
+	int ret = C_SUCCESS;
+	int read_size = C_MYSQL_PACKET_HEADER_SIZE;
+
+	char *buffer = get_buffer();
+	ret = read_data(session.get_fd(), buffer, read_size);
+	if (ret != C_SUCCESS){
+		Logs::elog("read authority data from client fails.");
+	}
+	else {
+		Logs::log("start to read authority data from %s:%d.",
+				inet_ntoa(session.get_addr().sin_addr),
+				ntohs(session.get_addr().sin_port));
+
+		uint8_t auth_len = 0;
+		uint64_t user_name_len = 0;
+		uint64_t db_len = 0;
+		char *pos = buffer;
+		pos += C_MYSQL_PACKET_HEADER_SIZE;
+		CMysqlUtil::get_uint4(pos, login_info_.max_message_length_);
+		CMysqlUtil::get_uint1(pos, login_info_.character_set_);
+		pos += 23;
+		user_name_len = strlen(pos);
+		login_info_.user_name_ = string(pos, user_name_len);
+		pos += user_name_len + 1;	// null
+		CMysqlUtil::get_uint1(pos, auth_len);
+		login_info_.auth_ = string(pos, auth_len);
+		pos += auth_len;
+		db_len = strlen(pos);
+		login_info_.db_ = string(pos, db_len);
+		pos += db_len;
+
+		Logs::log("read authority data successfully");
+		Logs::log("login info: max message len is %l, character set is %d, user name is %s"
+				"auth is %s, db name is %s",
+				login_info_.max_message_length_,
+				login_info_.character_set_,
+				login_info_.user_name_.c_str(),
+				login_info_.auth_.c_str(),
+				login_info_.db_.c_str()
+		);
+	}
+
+	return ret;
+}
+
+int CMysqlLoginer::send_authority_res(const CMysqlSession& session) {
+	int ret = C_SUCCESS;
+	CMysqlOKPacket ok_packet;
+	CMysqlErrorPacket error_packet;
+	CMysqlSQLPacket *packet = NULL;
+
+	//set packet
+	if (server_->has_full_session() != C_SUCCESS) {
+		ret = C_ERR_FULL_SESSION;
+		Logs::elog("session is full. sorry to refuse.");
+		error_packet.set_errcode(ret);
+		error_packet.set_message("too many sessions");
+		packet = &error_packet;
+	}
+	else if ((ret = check_authority()) != C_SUCCESS) {
+		Logs::elog("sorry, check fails");
+		string message;
+		switch (ret)
+		{
+		case C_ERR_USER_EMPTY: {
+			message.assign("username is empty");
+		}break;
+		case C_ERR_USER_NOT_EXIST: {
+			message.assign("username not exists");
+		}break;
+		case C_ERR_WRONG_PASSWORD: {
+			message.assign("wrong password");
+		}break;
+		default:{
+		}
+		}
+		error_packet.set_errcode(ret);
+		error_packet.set_message(message);
+
+		packet = &error_packet;
+	}
+	else {
+		packet = &ok_packet;
+	}
+
+	// encode packet and write
+	int64_t pos = 0;
+	int64_t len = MAX_PACKET_SIZE;
+	ret = packet->encode(buffer_, len, pos);
+	if (ret != C_SUCCESS) {
+		Logs::elog("when send authority result, encode packet fails");
+	}
+	else {
+		char *buffer = get_buffer();
+		ret = write_data(session.get_fd(), buffer, MAX_PACKET_SIZE);
+		if (ret == C_ERROR) {
+			Logs::elog("write check authority result to client fails. "
+					"fd is %d, buffer is %p, len is %ld, errno is %d",
+					session.get_fd(), buffer, len, ret);
+		}
+		else {
+			Logs::log("send check authority result to %s successfully",
+					inet_ntoa(session.get_addr().sin_addr));
+		}
+	}
+
+	return ret;
+}
+
+
+int CMysqlLoginer::check_authority() {
+	int ret = C_SUCCESS;
+	Logs::log(login_info_.user_name_.c_str());
+	Logs::log(login_info_.auth_.c_str());
+
+	return ret;
+}
+
+int CMysqlLoginer::write_data(int fd, char *buffer, int len) {
+	int ret = C_SUCCESS;
+	if (len <= 0 || fd < 0 || buffer == NULL) {
+		Logs::elog("invalid argument fd=%d, buffer=%p, length=%d", fd, buffer, len);
+		ret = C_ERROR;
+	}
+	else {
+		int count;
+		// make sure write all data
+		while (len > 0 && (count = write(fd, buffer, len)) != 0) {
+			if (count == -1) {
+				if (errno == EINTR) {	// if call is interrupted by signal
+					continue;
+				}
+				Logs::elog("%s. write buffer fails, fd is %d, buffer is %p, len is %d.", fd, buffer, len);
+				ret = C_ERROR;
+				break;
+			}
+			else {
+				buffer += count;
+				len -= count;
+			}
+		}
+	}
+	return ret;
+}
+
+int write_data(int fd, char *buffer, int len) {
+	int ret = C_SUCCESS;
+	if (fd < 0 || buffer == NULL || len <= 0) {
+		ret = C_ERROR;
+		Logs::elog("invalid argument fd=%d, buffer=%p, length=%d", fd, buffer, len);
+	}
+	else {
+		int count;
+		while (len > 0 && (count = read(fd, buffer, len)) != 0) {
+			if (count == -1) {
+				if (errno == EINTR || errno == EAGAIN) {
+					continue;
+				}
+				ret = C_ERROR;
+				Logs::elog("%s. read data failed. fd is %d, buffer is %p, len is %d.", fd, buffer, len);
+				break;
+			}
+			else {
+				len -= count;
+				buffer += count;
+			}
+		}
+	}
+	return ret;
 }

@@ -6,16 +6,20 @@ AM_LDFLAGS = -pthread -g
 bin_PROGRAMS = server
 
 server_SOURCES = \
-	CMysqlServer.cpp	CMysqlUtil.cpp \
-	CSession.cpp	ThreadPool.cpp \
-	TestMain.cpp
+	CMysqlDefine.h	CMysqlLoginer.cpp \
+	CMysqlServer.cpp	CMysqlSession.cpp \
+	CMysqlState.cpp	CMysqlUtil.cpp \
+	TestMain.cpp	ThreadPool.cpp
 	
 noinst_HEADERS = \
-	CMysqlServer.h	CMysqlUtil.h \
-	CSession.h		ThreadPool.h \
-	CDefine.h		Logs.h
+	CMysqlDefine.h 		CMysqlLoginer.h \
+	CMysqlServer.h 		CMysqlSession.h \
+	CMysqlState.h 		CMysqlUtil.h \
+	Logs.h 	 		ThreadPool.h
 
 server_LDADD = packet/libpacket.a
 
 SUBDIRS = packet
 DIST_SUBDIRS = packet
+
+

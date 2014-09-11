@@ -6,9 +6,11 @@
  */
 #include "CMysqlLoginer.h"
 #include "CMysqlServer.h"
+#include <bitset>
 
 CMysqlLoginer::CMysqlLoginer(){
 	buffer_ = (char*)malloc(MAX_PACKET_SIZE * sizeof(char));
+	memset(buffer_, 0, sizeof(buffer_));
 }
 
 CMysqlLoginer::~CMysqlLoginer(){
@@ -23,32 +25,43 @@ int CMysqlLoginer::login(const CMysqlSession& session) {
 	if (ret != C_SUCCESS) {
 		Logs::elog("send shake hand packet failed.");
 	}
+	else {
+		Logs::log("send shake hand packet successfully");
+	}
 
 	ret = receive_authority(session);
 	if (ret != C_SUCCESS) {
 		Logs::elog("receive authority packet failed.");
+	}
+	else {
+		Logs::log("receive authority packet successfully");
 	}
 
 	ret = send_authority_res(session);
 	if (ret != C_SUCCESS) {
 		Logs::elog("send authority result failed.");
 	}
+	else {
+		Logs::log("send authority result packet successfully");
+	}
 	return ret;
 }
 
 int CMysqlLoginer::shake_hand(const CMysqlSession& session) {
+	Logs::log("in shake_hand function------");
 	int ret;
 	CMysqlHandshakePacket shakehand_packet;
 	shakehand_packet.set_thread_id(pthread_self());
 
 	int64_t len = MAX_PACKET_SIZE;
 	int64_t pos = 0;
+	memset(buffer_, 0, sizeof(buffer_));
 	char *buffer = get_buffer();
 	ret = shakehand_packet.serialize(buffer, len, pos);
 	if (ret != C_SUCCESS) {
 		Logs::elog("shake hand packet serialize fails. buffer_ is %p, len is %d, pos is %d", buffer, len, pos);
 	}
-	ret = write_data(session.get_fd(), buffer, len);
+	ret = write_data(session.get_fd(), buffer, pos);
 	if (ret == C_ERROR) {
 		Logs::elog("write shake hand data to client fails. "
 				"fd is %d, buffer is %p, len is %ld, errno is %d",
@@ -62,24 +75,58 @@ int CMysqlLoginer::shake_hand(const CMysqlSession& session) {
 }
 
 int CMysqlLoginer::receive_authority(const CMysqlSession& session) {
+	Logs::log("in receive_authority function------");
 	int ret = C_SUCCESS;
 	int read_size = C_MYSQL_PACKET_HEADER_SIZE;
 
+
+	memset(buffer_, 0, sizeof(buffer_));
 	char *buffer = get_buffer();
 	ret = read_data(session.get_fd(), buffer, read_size);
 	if (ret != C_SUCCESS){
 		Logs::elog("read authority data from client fails.");
 	}
 	else {
+		uint32_t aa;
+		CMysqlUtil::get_uint3(buffer, aa);
+		buffer -= 3;
+		Logs::log("real size of authorition packet is %ld", aa);
 		Logs::log("start to read authority data from %s:%d.",
 				inet_ntoa(session.get_addr().sin_addr),
 				ntohs(session.get_addr().sin_port));
+		{
+			cout<<"ret: ";
+			for (int i = 0; i < 40; ++i){
+				bitset<8> a((int)buffer[i]);
+				cout<<a<<"-";
+			}
+			cout<<endl;
+			string str(buffer);
+			cout<<"传输前的报文内容： "<<str.length()<<endl;
+		}
+
+		/*
+		 * 解析登录认证报文，客户端至服务器
+		 * ===================报文头===========		Byte
+		 * 消息长度		3
+		 * 序号			1
+		 * ===================报文体===========		Byte
+		 * capability_flags: 客户端权能标志         4
+		 * max_packet_size: 最大消息长度            	4
+		 * character_set: 字符编码					1
+		 *  填充值（略过）                           		23
+		 * user_name_: 用户名
+		 * auth_response_: 挑战认证数据
+		 * db_name_: 数据库名称（可选）	useless for CLAIMS
+		 *
+		 * */
 
 		uint8_t auth_len = 0;
 		uint64_t user_name_len = 0;
 		uint64_t db_len = 0;
-		char *pos = buffer;
+		char *pos = get_buffer();
 		pos += C_MYSQL_PACKET_HEADER_SIZE;
+		CMysqlUtil::get_uint4(pos, login_info_.capability_.cap_flags);
 		CMysqlUtil::get_uint4(pos, login_info_.max_message_length_);
 		CMysqlUtil::get_uint1(pos, login_info_.character_set_);
 		pos += 23;
@@ -94,7 +141,7 @@ int CMysqlLoginer::receive_authority(const CMysqlSession& session) {
 		pos += db_len;
 
 		Logs::log("read authority data successfully");
-		Logs::log("login info: max message len is %l, character set is %d, user name is %s"
+		Logs::log("login info: max message len is %ld, character set is %d, user name is %s, "
 				"auth is %s, db name is %s",
 				login_info_.max_message_length_,
 				login_info_.character_set_,
@@ -108,6 +155,7 @@ int CMysqlLoginer::receive_authority(const CMysqlSession& session) {
 }
 
 int CMysqlLoginer::send_authority_res(const CMysqlSession& session) {
+	Logs::log("in send_authority_res function------");
 	int ret = C_SUCCESS;
 	CMysqlOKPacket ok_packet;
 	CMysqlErrorPacket error_packet;
@@ -148,15 +196,16 @@ int CMysqlLoginer::send_authority_res(const CMysqlSession& session) {
 	}
 
 	// encode packet and write
-	int64_t pos = 0;
+	int64_t pos = 0;	// the real size of packet
 	int64_t len = MAX_PACKET_SIZE;
 	ret = packet->encode(buffer_, len, pos);
 	if (ret != C_SUCCESS) {
 		Logs::elog("when send authority result, encode packet fails");
 	}
 	else {
+		memset(buffer_, 0, sizeof(buffer_));
 		char *buffer = get_buffer();
-		ret = write_data(session.get_fd(), buffer, MAX_PACKET_SIZE);
+		ret = write_data(session.get_fd(), buffer, pos);
 		if (ret == C_ERROR) {
 			Logs::elog("write check authority result to client fails. "
 					"fd is %d, buffer is %p, len is %ld, errno is %d",
@@ -174,8 +223,8 @@ int CMysqlLoginer::send_authority_res(const CMysqlSession& session) {
 
 int CMysqlLoginer::check_authority() {
 	int ret = C_SUCCESS;
-	Logs::log(login_info_.user_name_.c_str());
-	Logs::log(login_info_.auth_.c_str());
+	Logs::log("username is %s", login_info_.user_name_.c_str());
+	Logs::log("authority is %s", login_info_.auth_.c_str());
 
 	return ret;
 }
@@ -207,7 +256,7 @@ int CMysqlLoginer::write_data(int fd, char *buffer, int len) {
 	return ret;
 }
 
-int write_data(int fd, char *buffer, int len) {
+int CMysqlLoginer::read_data(int fd, char *buffer, int len) {
 	int ret = C_SUCCESS;
 	if (fd < 0 || buffer == NULL || len <= 0) {
 		ret = C_ERROR;

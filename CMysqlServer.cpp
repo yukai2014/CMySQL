@@ -111,8 +111,12 @@ int CMysqlServer::listen_port(int port){
 		return C_ERROR;
 	}
 
-	sockaddr_in addr;
+	// enable address reuse
+	int temp_val = 1;
+	setsockopt(listening_fd, SOL_SOCKET, SO_REUSEADDR, &temp_val, sizeof(temp_val));
 
+
+	sockaddr_in addr;
 	bzero(&addr, sizeof(addr));
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	addr.sin_family = AF_INET;

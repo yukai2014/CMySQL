@@ -34,7 +34,6 @@ int CMysqlServer::start() {
 		return C_ERROR;
 	}
 
-	int epoll_fd;
 	if ((epoll_fd = epoll_create(connection_max_count_)) == -1){
 		Logs::elog("%s. create epoll failed.", strerror(errno));
 		close(listening_fd);
@@ -60,7 +59,7 @@ int CMysqlServer::start() {
 			break;
 		}
 		else if (result == 0){
-			Logs::log("time out, keep waiting...");
+//			Logs::log("time out, keep waiting...");
 		}
 		else{
 			for (int i = 0; i < result; ++i){
@@ -81,7 +80,7 @@ int CMysqlServer::start() {
 				Logs::log("available fd is:	%d", ready_fd);
 				if (ready_fd == listening_fd){
 					int connected_fd;
-					AcceptConnection(epoll_fd, listening_fd, connected_fd);
+					AcceptConnection(listening_fd, connected_fd);
 					ret = loginer_.login(*(fd_to_session.at(connected_fd)));
 				}
 				else{
@@ -136,7 +135,7 @@ int CMysqlServer::listen_port(int port){
 	return C_SUCCESS;
 }
 
-bool CMysqlServer::AcceptConnection(int epoll_fd, int fd, int &connected_fd)
+bool CMysqlServer::AcceptConnection(int fd, int &connected_fd)
 {
 	int ret = C_SUCCESS;
 	Logs::log("in AcceptConnection function");
@@ -178,12 +177,20 @@ bool CMysqlServer::ReceiveData(int fd)
 {
 	Logs::log("in ReceiveData function");
 	CMysqlSession *s;
-	if (fd_to_session.find(fd) != fd_to_session.end()){
-		Logs::elog("fd is not in map");
-	}
-	else{
+
+//		{
+//			cout<<"in map: ";
+//			map<int, CMysqlSession*>::iterator it;
+//			for (it = fd_to_session.begin(); it != fd_to_session.end(); ++it) {
+//				cout<<fd<<" ";
+//			}
+//			cout<<endl;
+//		}
+
+	if (fd_to_session.find(fd) == fd_to_session.end())
+		Logs::elog("fd %d is not in map", fd);
+	else
 		s = fd_to_session.find(fd)->second;
-	}
 
 	int message_length = 10000;
 	char buf[message_length];
@@ -194,7 +201,8 @@ bool CMysqlServer::ReceiveData(int fd)
 		return false;
 	}
 	else if (recv_count == 0){
-		Logs::elog("received nothing . maybe client close normally\n");
+		Logs::elog("client close normally\n");
+		epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL);
 		return false;
 	}
 

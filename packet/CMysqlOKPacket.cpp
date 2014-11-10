@@ -1,5 +1,6 @@
 
 #include "CMysqlOKPacket.h"
+#include <bitset>
 
 
 CMysqlOKPacket::CMysqlOKPacket()
@@ -39,6 +40,7 @@ int CMysqlOKPacket::set_message(string& message)
 
 int CMysqlOKPacket::encode(char* buffer, int64_t length, int64_t& pos)
 {
+	Logs::log("in CMysqlOKPacket::encode Function");
 	int ret = C_SUCCESS;
 	int64_t start_pos = pos;
 	if (NULL == buffer || 0 >= length || pos < 0)
@@ -56,7 +58,7 @@ int CMysqlOKPacket::encode(char* buffer, int64_t length, int64_t& pos)
 			uint32_t pkt_len = static_cast<uint32_t>(pos - start_pos - C_MYSQL_PACKET_HEADER_SIZE);
 			if (C_SUCCESS != (ret = CMysqlUtil::store_int3(buffer, length, pkt_len, start_pos)))
 			{
-				Logs::elog("serialize packet haader size failed, buffer=%p, buffer length=%ld, packet length=%d, pos=%ld",
+				Logs::elog("serialize packet header size failed, buffer=%p, buffer length=%ld, packet length=%d, pos=%ld",
 						buffer, length, pkt_len, start_pos);
 			}
 			else if (C_SUCCESS != (ret = CMysqlUtil::store_int1(buffer, length, 2, start_pos)))
@@ -70,6 +72,16 @@ int CMysqlOKPacket::encode(char* buffer, int64_t length, int64_t& pos)
 			Logs::elog("encode ok packet data failed");
 		}
 	}
+
+//	{
+//		cout<<"received authority data: ";
+//		for (int i = 0; i < 40; ++i){
+//			bitset<8> a((int)buffer[i]);
+//			cout<<a<<"-";
+//		}
+//		cout<<endl;
+//	}
+
 	return ret;
 }
 

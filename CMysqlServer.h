@@ -68,7 +68,7 @@ public:
 
 	int listen_port(int port);
 
-	bool AcceptConnection(int epoll_fd, int fd, int &connected_fd);
+	bool AcceptConnection(int fd, int &connected_fd);
 	bool ReceiveData(epoll_event event, char *buf);
 	bool ReceiveData(int fd);
 	int has_full_session(){
@@ -86,6 +86,7 @@ public:
 
 private:
 	int listening_fd;
+	int epoll_fd;
 	int port_;
 	int work_threads_count_;
 	int connection_max_count_;

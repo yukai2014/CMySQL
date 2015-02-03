@@ -19,7 +19,8 @@ int CMysqlErrorPacket::encode(char* buffer, int64_t length, int64_t& pos)
 	int64_t start_pos = pos;
 	if (NULL == buffer || 0 >= length || pos < 0)
 	{
-		Logs::elog("invalid argument buffer=%p, length=%ld, pos=%ld",
+		//Logs::elog
+	ELOG("invalid argument buffer=%p, length=%ld, pos=%ld",
 				buffer, length, pos);
 		ret = C_INVALID_ARGUMENT;
 	}
@@ -32,18 +33,21 @@ int CMysqlErrorPacket::encode(char* buffer, int64_t length, int64_t& pos)
 			uint32_t pkt_len = static_cast<uint32_t>(pos - start_pos - C_MYSQL_PACKET_HEADER_SIZE);
 			if (C_SUCCESS != (ret = CMysqlUtil::store_int3(buffer, length, pkt_len, start_pos)))
 			{
-				Logs::elog("serialize packet haader size failed, buffer=%p, buffer length=%ld, packet length=%d, pos=%ld",
+				//Logs::elog
+	ELOG("serialize packet haader size failed, buffer=%p, buffer length=%ld, packet length=%d, pos=%ld",
 						buffer, length, pkt_len, start_pos);
 			}
 			else if (C_SUCCESS != (ret = CMysqlUtil::store_int1(buffer, length, 2, start_pos)))
 			{
-				Logs::elog("serialize packet haader seq failed, buffer=%p, buffer length=%ld, seq number=%d, pos=%ld",
+				////Logs::elog
+	ELOG("serialize packet haader seq failed, buffer=%p, buffer length=%ld, seq number=%d, pos=%ld",
 						buffer, length, 2, start_pos);
 			}
 		}
 		else
 		{
-			Logs::elog("encode error packet data failed");
+			////Logs::elog
+	ELOG("encode error packet data failed");
 		}
 	}
 	return ret;
@@ -55,7 +59,8 @@ int CMysqlErrorPacket::serialize(char* buffer, int64_t len, int64_t& pos)
 
 	if (NULL == buffer || 0 >= len || pos < 0)
 	{
-		Logs::elog("invalid argument buffer=%p, length=%ld, pos=%ld",
+		////Logs::elog
+	ELOG("invalid argument buffer=%p, length=%ld, pos=%ld",
 				buffer, len, pos);
 		ret = C_INVALID_ARGUMENT;
 	}
@@ -63,17 +68,20 @@ int CMysqlErrorPacket::serialize(char* buffer, int64_t len, int64_t& pos)
 	{
 		if (C_SUCCESS != (ret = CMysqlUtil::store_int1(buffer, len, field_count_, pos)))
 		{
-			Logs::elog("serialize field_count failed, buffer=%p, len=%ld, field_count_=%u, pos=%ld",
+			//Logs::elog
+			ELOG("serialize field_count failed, buffer=%p, len=%ld, field_count_=%u, pos=%ld",
 					buffer, len, field_count_, pos);
 		}
 		else if (C_SUCCESS != (ret = CMysqlUtil::store_int2(buffer, len, errcode_, pos)))
 		{
-			Logs::elog("serialize errcode failed, buffer=%p, len=%ld, errcode=%u, pos=%ld",
+			////Logs::elog
+	ELOG("serialize errcode failed, buffer=%p, len=%ld, errcode=%u, pos=%ld",
 					buffer, len, errcode_, pos);
 		}
 		else if (C_SUCCESS != (ret = CMysqlUtil::store_int1(buffer, len, MARKER, pos)))
 		{
-			Logs::elog("serialize marker failed, buffer=%p, len=%ld, marker=%c, pos=%ld",
+			////Logs::elog
+	ELOG("serialize marker failed, buffer=%p, len=%ld, marker=%c, pos=%ld",
 					buffer, len, '#', pos);
 		}
 
@@ -86,7 +94,8 @@ int CMysqlErrorPacket::serialize(char* buffer, int64_t len, int64_t& pos)
 			}
 			else
 			{
-				Logs::elog("not enough buffer to serialize sqlstate, buffer=%p, len=%ld,"
+				////Logs::elog
+	ELOG("not enough buffer to serialize sqlstate, buffer=%p, len=%ld,"
 						"sqlstate length=%ld,pos=%ld", buffer, len, SQLSTATE_SIZE, pos);
 				ret = C_ERROR;
 			}
@@ -97,7 +106,8 @@ int CMysqlErrorPacket::serialize(char* buffer, int64_t len, int64_t& pos)
 			ret = CMysqlUtil::store_obstr_nzt(buffer, len, message_, pos);
 			if (C_SUCCESS != ret)
 			{
-				Logs::elog("serialize message failed, buffer=%p, len=%ld, message length=%d,"
+				//Logs::elog
+	ELOG("serialize message failed, buffer=%p, len=%ld, message length=%d,"
 						"pos=%ld", buffer, len, message_.length(), pos);
 			}
 		}
@@ -118,7 +128,8 @@ int CMysqlErrorPacket::set_message(const string& message)
 	int ret = C_SUCCESS;
 	if ( 0 >= message.size())
 	{
-		Logs::elog("invalid argument message.ptr=%p, message.length()=%d",
+		//Logs::elog
+	ELOG("invalid argument message.ptr=%p, message.length()=%d",
 				&message, message.length());
 		ret = C_INVALID_ARGUMENT;
 	}

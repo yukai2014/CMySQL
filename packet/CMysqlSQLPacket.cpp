@@ -19,7 +19,8 @@ int CMysqlSQLPacket::encode(char* buffer, int64_t length, int64_t& pos)
 	int64_t start_pos = pos;
 	if (NULL == buffer || 0 >= length || pos < 0)
 	{
-		Logs::elog("invalid argument buffer=%p, length=%ld, pos=%ld",
+		//Logs::elog
+	ELOG("invalid argument buffer=%p, length=%ld, pos=%ld",
 				buffer, length, pos);
 		ret = C_INVALID_ARGUMENT;
 	}
@@ -32,12 +33,14 @@ int CMysqlSQLPacket::encode(char* buffer, int64_t length, int64_t& pos)
 			uint32_t pkt_len = static_cast<uint32_t>(pos - start_pos - C_MYSQL_PACKET_HEADER_SIZE);
 			if (C_SUCCESS != (ret = CMysqlUtil::store_int3(buffer, length, pkt_len, start_pos)))
 			{
-				Logs::elog("serialize packet haader size failed, buffer=%p, buffer length=%ld, packet length=%d, pos=%ld",
+				//Logs::elog
+	ELOG("serialize packet haader size failed, buffer=%p, buffer length=%ld, packet length=%d, pos=%ld",
 						buffer, length, pkt_len, start_pos);
 			}
 			else if (C_SUCCESS != (ret = CMysqlUtil::store_int1(buffer, length, header_.seq_, start_pos)))
 			{
-				Logs::elog("serialize packet haader seq failed, buffer=%p, buffer length=%ld, seq number=%u, pos=%ld",
+				//Logs::elog
+	ELOG("serialize packet haader seq failed, buffer=%p, buffer length=%ld, seq number=%u, pos=%ld",
 						buffer, length, header_.seq_, start_pos);
 			}
 		}
@@ -49,7 +52,8 @@ int CMysqlSQLPacket::encode(char* buffer, int64_t length, int64_t& pos)
 			}
 			else
 			{
-				Logs::elog("encode packet data failed, ret is %d", ret);
+				//Logs::elog
+	ELOG("encode packet data failed, ret is %d", ret);
 			}
 		}
 

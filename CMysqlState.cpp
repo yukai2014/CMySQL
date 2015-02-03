@@ -30,7 +30,8 @@ const char *CMysqlState::get_odbc_state(int oberr) const
     }
     else if ((-oberr) >= C_MAX_ERROR_CODE)
     {
-      Logs::log("oceanbase error code out of range, err=[%d]", oberr);
+      //Logs::log
+	LOG("oceanbase error code out of range, err=[%d]", oberr);
     }
     else if (NULL != maps_[-oberr].odbc_state && maps_[-oberr].odbc_state[0] != '\0')
     {
@@ -53,7 +54,8 @@ const char *CMysqlState::get_jdbc_state(int oberr) const
     }
     else if ((-oberr) >= C_MAX_ERROR_CODE)
     {
-      Logs::log("oceanbase error code out of range, err=[%d]", oberr);
+      //Logs::log
+	LOG("oceanbase error code out of range, err=[%d]", oberr);
     }
     else if (NULL != maps_[-oberr].jdbc_state && maps_[-oberr].jdbc_state[0] != '\0')
     {

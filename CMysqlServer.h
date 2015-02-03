@@ -25,7 +25,7 @@
 #include "packet/CMysqlSQLPacket.h"
 #include "packet/CMysqlFieldPacket.h"
 #include "packet/CMysqlEofPacket.h"
-#include "CMysqlSession.h"
+#include "CMysqlConnection.h"
 #include "CMysqlLoginer.h"
 #include "ThreadPool.h"
 #include "Logs.h"
@@ -81,7 +81,7 @@ public:
 	ThreadPool *threadpool_;
 	queue<CMysqlSQLPacket*> in_queue_;
 	queue<CMysqlSQLPacket*> out_queue_;
-	map<int, CMysqlSession*> fd_to_session;
+	map<int, CMysqlConnection*> fd_to_session;
 	char *temp_buffer;	//TODO: should be replaced by memory pool
 
 private:

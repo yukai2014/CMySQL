@@ -5,8 +5,8 @@
  *      Author: imdb
  */
 
-#ifndef C_MYSQL_SESSION_H_
-#define C_MYSQL_SESSION_H_
+#ifndef C_MYSQL_CONNECTION_H_
+#define C_MYSQL_CONNECTION_H_
 
 #include <iostream>
 #include <sys/socket.h>
@@ -18,13 +18,13 @@ using namespace std;
 
 enum status{to_shakehand, to_check, to_command, command};
 
-class CMysqlSession
+class CMysqlConnection
 {
 public:
-	CMysqlSession();
-	CMysqlSession(int fd);
-	CMysqlSession(int fd, sockaddr_in addr);
-	virtual ~CMysqlSession();
+	CMysqlConnection();
+	CMysqlConnection(int fd);
+	CMysqlConnection(int fd, sockaddr_in addr);
+	virtual ~CMysqlConnection();
 	bool check_timeout();
 	int64_t get_last_time();
 

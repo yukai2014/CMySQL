@@ -55,7 +55,8 @@ int CMysqlHandshakePacket::serialize(char *buffer,int64_t len,int64_t &pos) {
 		Voluntary context switches 2, Involuntary context switches 2
 	 *(header
 	 */
-	Logs::log("start to serialize packet header and packet.");
+	//Logs::log
+	LOG("start to serialize packet header and packet.");
 	int64_t pkt_len=48;
 	CMysqlUtil::store_int3(buffer,len,static_cast<uint32_t>(pkt_len),pos);
 //	cout<<"-----------------------------------pos: "<<pos<<endl;

@@ -14,7 +14,7 @@
 #include "packet/CMysqlHandshakePacket.h"
 #include "packet/CMysqlOKPacket.h"
 #include "packet/CMysqlErrorPacket.h"
-#include "CMysqlSession.h"
+#include "CMysqlConnection.h"
 
 class CMysqlServer;
 
@@ -63,11 +63,11 @@ public:
 	CMysqlLoginer();
 	~CMysqlLoginer();
 
-	int shake_hand(const CMysqlSession& session);
-	int login(const CMysqlSession& session);
-	int check_authority(const CMysqlSession& session);
-	int receive_authority(const CMysqlSession& session);
-	int send_authority_res(const CMysqlSession& session);
+	int shake_hand(const CMysqlConnection& session);
+	int login(const CMysqlConnection& session);
+	int check_authority(const CMysqlConnection& session);
+	int receive_authority(const CMysqlConnection& session);
+	int send_authority_res(const CMysqlConnection& session);
 	int check_authority();
 
 	int write_data(int fd, char *buffer, int len);

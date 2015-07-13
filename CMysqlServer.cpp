@@ -7,6 +7,7 @@
 
 #include "CMysqlServer.h"
 
+#include <unistd.h>
 CMysqlServer::CMysqlServer():port_(2345),work_threads_count_(4),connection_max_count_(300) {
 	temp_buffer = (char*)malloc(MAX_PACKET_SIZE * sizeof(char));
 	memset(temp_buffer, 0, sizeof(temp_buffer));

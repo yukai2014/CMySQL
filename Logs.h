@@ -14,8 +14,8 @@
 #include "CMysqlUtil.h"
 
 
-//#define INFO
-//#define DEBUG
+#define INFO
+#define DEBUG
 
 //namespace Logs
 //{

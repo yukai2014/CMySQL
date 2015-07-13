@@ -5,6 +5,9 @@
  *      Author: imdb
  */
 #include "CMysqlLoginer.h"
+
+#include <unistd.h>
+
 #include "CMysqlServer.h"
 #include <bitset>
 

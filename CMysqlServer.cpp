@@ -234,7 +234,8 @@ bool CMysqlServer::ReceiveData(int fd)
 		return false;
 	}
 
-	CMysqlUtil::get_uint1((char* &)buf, cmd_type);
+	char* pos = buf;
+	CMysqlUtil::get_uint1(pos, cmd_type);
 	sockaddr_in client_addr = fd_to_session.at(fd)->get_addr();
 	//Logs::log
 	LOG("receive %d types content:%s\n		------from %s:%d\n",recv_count, buf, inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));

@@ -71,7 +71,7 @@ int CMysqlLoginer::shake_hand(const CMysqlConnection& session) {
 	ret = shakehand_packet.serialize(buffer, len, pos);
 	if (ret != C_SUCCESS) {
 		//Logs::elog
-	ELOG("shake hand packet serialize fails. buffer_ is %p, len is %d, pos is %d", buffer, len, pos);
+	  ELOG("shake hand packet serialize fails. buffer_ is %p, len is %d, pos is %d", buffer, len, pos);
 		return ret;
 	}
 	ret = write_data(session.get_fd(), buffer, pos);
@@ -83,7 +83,7 @@ int CMysqlLoginer::shake_hand(const CMysqlConnection& session) {
 	}
 	else {
 		//Logs::log
-	LOG("send shake hand packet to %s", inet_ntoa(session.get_addr().sin_addr));
+	LOG("send shake hand packet to fd %d with ip is %s", session.get_fd(), inet_ntoa(session.get_addr().sin_addr));
 	}
 
 	return ret;
@@ -287,7 +287,7 @@ int CMysqlLoginer::write_data(int fd, char *buffer, int len) {
 					continue;
 				}
 				//Logs::elog
-	ELOG("%s. write buffer fails, fd is %d, buffer is %p, len is %d.", fd, buffer, len);
+				ELOG("%s. write buffer fails, fd is %d, buffer is %p, len is %d.", fd, buffer, len);
 				ret = C_ERROR;
 				break;
 			}

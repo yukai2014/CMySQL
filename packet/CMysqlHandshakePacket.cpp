@@ -39,13 +39,14 @@ int CMysqlHandshakePacket::serialize(char *buffer,int64_t len,int64_t &pos) {
 	 *server_capabilities_: 服务器权能标志                   2       store_int2
 	 *server_language_: 字符编码                           1        store_int1
 	 *server_status_: 服务器状态                            2       store_int2
-    *char plugin_[13]: "ob中服务器权能，挑战长度和填充值的和"  13        memcpy
-    *char plugin2_[12]: 第二波挑战随机数，至少12字节         12        memcpy
+   *char plugin_[13]: "ob中服务器权能，挑战长度和填充值的和"  13        memcpy
+   *char plugin2_[12]: 第二波挑战随机数，至少12字节         12        memcpy
 	 *terminated_: 结束                                   1        memset(0)
 	 *------------------报文头-----------------
 	 *下面是要放到报文头中
 	 *(header size)pkt_len: 消息长度				          3        store_int3
 	 *(header seq)0： 消息序号                              1        store_int1
+
 	 [casa@casa ~]$ mysql -h 10.11.1.174 -P2345 --debug-info
 		ERROR 2013 (HY000): Lost connection to MySQL server at 'reading authorization packet', system error: 0
 		User time 0.00, System time 0.00
@@ -79,12 +80,12 @@ int CMysqlHandshakePacket::serialize(char *buffer,int64_t len,int64_t &pos) {
 //	cout<<"-----------------------------------pos: "<<pos<<endl;
 	CMysqlUtil::store_int2(buffer,len,server_status_,pos);
 //	cout<<"-----------------------------------pos: "<<pos<<endl;
-	memcpy(buffer+pos,plugin2_,13);pos=pos+13;
+	memcpy(buffer+pos,plugin_,13);pos=pos+13;
 //	cout<<"-----------------------------------pos: "<<pos<<endl;
 	memcpy(buffer+pos,plugin2_,12);pos=pos+12;
 //	cout<<"-----------------------------------pos: "<<pos<<endl;
-	memset(buffer+pos,terminated_,0);pos=pos+1;
-//	cout<<"-----------------------------------pos: "<<pos<<endl;
+	memset(buffer+pos,0,1);pos=pos+1;
+	cout<<"-----------------------------------pos: "<<pos<<endl;
 	return C_SUCCESS;
 	//三个字节的 length=48;
 	//一个字节的 seq=0;

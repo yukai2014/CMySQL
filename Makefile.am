@@ -1,6 +1,6 @@
-AM_CPPFLAGS = -fPIC
+AM_CPPFLAGS = -fPIC -g3
 
-AM_LDFLAGS = -pthread -g
+AM_LDFLAGS = -pthread 
 
 
 bin_PROGRAMS = server
